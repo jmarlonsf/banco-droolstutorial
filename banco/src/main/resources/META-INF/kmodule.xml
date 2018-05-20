@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kmodule xmlns="http://jboss.org/kie/6.0.0/kmodule">
+    <kbase name="rules" packages="licao1">
+        <ksession name="ksession-rules"/>
+    </kbase>
+    <kbase name="rules2" packages="licao2">
+        <ksession name="ksession-licao2"/>
+    </kbase>
+    <kbase name="rules3" packages="licao3">
+        <ksession name="ksession-licao3"/>
+    </kbase>
+    <kbase name="rules4" packages="licao4">
+        <ksession name="ksession-licao4"/>
+    </kbase>
+    <kbase name="rules4a" packages="licao4a">
+        <ksession name="ksession-licao4a"/>
+    </kbase>
+</kmodule>

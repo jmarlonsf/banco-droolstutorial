@@ -1,0 +1,33 @@
+//created on: 19/04/2018
+package droolstutorial
+
+//list any import classes here.
+import droolstutorial.Conta;
+import droolstutorial.MovimentacaoCaixa;
+import droolstutorial.PeriodoContabil;
+import util.OutputDisplay;
+
+//declare any global variables here
+global OutputDisplay resultado;
+
+rule "Conta grupo1"
+    ruleflow-group "grupo1"
+    when
+        Conta(  )
+    then 
+        resultado.exibeTexto("Conta no grupo1");
+end
+
+rule "Conta grupo2"
+    ruleflow-group "grupo2"
+    when
+        Conta(  )
+    then 
+        resultado.exibeTexto("Conta no grupo2");
+end
+
+rule "start process"
+    when
+    then
+        kcontext.getKieRuntime().startProcess("RF1");
+end

@@ -1,0 +1,113 @@
+//created on: 19/04/2018
+package droolstutorial
+
+//list any import classes here.
+import java.util.ArrayList
+import droolstutorial.Cliente;
+import droolstutorial.ContaPrivada;
+import droolstutorial.MovimentacaoCaixa;
+import droolstutorial.service.ClienteService;
+import util.OutputDisplay;
+
+//declare any global variables here
+global OutputDisplay resultado;
+global ClienteService clienteService;
+
+rule "A movimentação do caixa pode ser Crédito ou Débito"
+    when
+        $caixa : MovimentacaoCaixa(tpMov in ( MovimentacaoCaixa.DEBITO , MovimentacaoCaixa.CREDITO) )
+
+    then
+        resultado.exibeTexto("A movimentação do caixa pode ser Crédito ou Débito");
+end
+
+rule "Accessor"
+    when
+        $caixa :ContaPrivada( dono.nome =="João" )
+    then
+        resultado.exibeTexto("Conta pertence a João");
+end
+
+rule "infixAnd"
+    when
+      ( $c1 : Cliente ( pais == "GB") and ContaPrivada( dono == $c1 ) )
+            or
+      ( $c1 : Cliente ( pais == "US") and ContaPrivada( dono == $c1 ) )
+    then
+        resultado.exibeTexto("Pessoa vive em GB ou US");
+end
+
+rule "Não eh Cliente"
+    when
+        not Cliente(  )
+    then
+        resultado.exibeTexto("Não é Cliente");
+end
+
+rule "Existe"
+    when
+        exists Conta(  )
+    then
+        resultado.exibeTexto("Existe uma Conta");
+end
+
+rule "ForAll"
+    when
+        forall ( Conta( $nrConta : nrConta  ) MovimentacaoCaixa( nrConta == $nrConta) )
+    then
+        resultado.exibeTexto("Toda a movimentação do caixa está vinculada a uma conta");
+end
+
+rule "FromCondition"
+    when
+        $c : Cliente()
+        $cc : Cliente(nome  == $c.nome , sobrenome == $c.sobrenome, pais != $c.pais) from clienteService.getListCliente();
+    then
+         resultado.exibeTexto("Encontrado o mesmo cliente em dois países");
+end
+
+rule "Mais de 2 Linhas de Movimentação do Caixa"
+    when
+        $c : Conta( $nrConta : nrConta )
+        $p : PeriodoContabil($dtInicio : dtInicio , $dtFim : dtFim )
+        $number : ArrayList( size >= 2 )
+              from collect( MovimentacaoCaixa( dtMov >= $dtInicio && dtMov  <= $dtFim , nrConta == $nrConta ) )
+    then
+        resultado.exibeTexto("Encontrado mais de duas linhas de movimentação do caixa");
+        resultado.exibeTexto("<<<<<<<<<<");
+        for (Object ff : $number){
+            resultado.exibeTexto(ff.toString());
+        }
+        resultado.exibeTexto(">>>>>>>>>>>>>>>>");
+end
+
+rule "Número de linhas de Movimentação do Caixa"
+    when
+        $c : Conta( $nrConta : nrConta )
+        $p : PeriodoContabil ($dtInicio : dtInicio , $dtFim : dtFim )
+        $number : ArrayList( )
+              from collect( MovimentacaoCaixa( dtMov >= $dtInicio && dtMov  <= $dtFim , nrConta == $nrConta ) )
+    then
+        resultado.exibeTexto("Encontrado "+$number.size()+" linhas != \'Mais de 2 Linhas de Movimentação do Caixa\'");
+end
+
+rule "Regra Crédito e Débito"
+    when
+        $c : Conta( $nrConta : nrConta )
+        $p : PeriodoContabil($dtInicio : dtInicio ,$dtFim : dtFim )
+        $totalCredito : Number( doubleValue > 100 )
+             from accumulate( MovimentacaoCaixa( tpMov == MovimentacaoCaixa.CREDITO, $vlMontante : vlMontante, dtMov >= $dtInicio && dtMov <= $dtFim, nrConta == $nrConta ),
+                              init( double total = 0; ),
+                              action( total += $vlMontante; ),
+                              reverse( total -= $vlMontante; ),
+                              result( total ) )
+        $totalDebito : Number( doubleValue > 100 )
+             from accumulate( MovimentacaoCaixa( tpMov == MovimentacaoCaixa.DEBITO, $vlMontante : vlMontante, dtMov >= $dtInicio && dtMov <= $dtFim , nrConta == $nrConta ),
+                              init( double total = 0; ),
+                              action( total += $vlMontante; ),
+                              reverse( total -= $vlMontante; ),
+                              result( total ) )
+    then
+        resultado.exibeTexto(" Encontrado "+$totalCredito+" como um crédito");
+        resultado.exibeTexto(" Encontrado "+$totalDebito+" como um débito");
+end

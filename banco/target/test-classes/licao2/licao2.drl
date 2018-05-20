@@ -1,0 +1,40 @@
+//created on: 12/04/2018
+package droolstutorial
+
+//list any import classes here.
+import droolstutorial.Conta;
+import droolstutorial.MovimentacaoCaixa;
+import droolstutorial.PeriodoContabil;
+
+import util.OutputDisplay;
+
+//declare any global variables here
+global OutputDisplay resultado;
+
+/*
+rule "Your First Rule revisited again"
+    when
+        Conta(  )
+    then
+        resultado.exibeTexto("Esta conta Existe");
+end
+*/
+rule "Regra Crédito"
+	when
+		$movCa: MovimentacaoCaixa( $dtMov: dtMov, $nrConta: nrConta, tpMov == MovimentacaoCaixa.CREDITO )
+		$conta: Conta( nrConta == $nrConta )
+		$perCt: PeriodoContabil( dtInicio <= $dtMov && dtFim >= $dtMov )
+	then
+		$conta.setVlBalanco($conta.getVlBalanco() + $movCa.getVlMontante());
+		resultado.exibeTexto("Conta número: " + $conta.getNrConta() + " tem agora um balanço de R$ " + $conta.getVlBalanco());
+end
+
+rule "Regra Débito"
+	when
+		$movCa: MovimentacaoCaixa( $dtMov: dtMov, $nrConta: nrConta, tpMov == MovimentacaoCaixa.DEBITO )
+		$conta: Conta( nrConta == $nrConta )
+		$perCt: PeriodoContabil( dtInicio <= $dtMov && dtFim >= $dtMov )
+	then
+		$conta.setVlBalanco($conta.getVlBalanco() - $movCa.getVlMontante());
+		resultado.exibeTexto("Conta número: " + $conta.getNrConta() + " tem agora um balanço de R$ " + $conta.getVlBalanco());
+end
